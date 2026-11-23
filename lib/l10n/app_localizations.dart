@@ -7469,13 +7469,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsHttpProxyNotConfigured.
   ///
   /// In zh, this message translates to:
-  /// **'未配置（直连）'**
+  /// **'未设置代理地址'**
   String get settingsHttpProxyNotConfigured;
 
   /// No description provided for @settingsHttpProxyDialogDesc.
   ///
   /// In zh, this message translates to:
-  /// **'设置全局 HTTP 代理，所有后端外发请求（插件下载、升级检查等）将通过此代理转发。留空则直连。'**
+  /// **'设置后端使用的 HTTP 代理。留空时，插件后端请求可以使用服务端的代理环境变量。'**
   String get settingsHttpProxyDialogDesc;
 
   /// No description provided for @settingsHttpProxyAddressLabel.

@@ -4310,11 +4310,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsHttpProxyTitle => 'HTTP proxy';
 
   @override
-  String get settingsHttpProxyNotConfigured => 'Not configured (direct)';
+  String get settingsHttpProxyNotConfigured => 'No proxy address set';
 
   @override
   String get settingsHttpProxyDialogDesc =>
-      'Set a global HTTP proxy. All outbound backend requests (plugin downloads, update checks, etc.) will be forwarded through it. Leave empty for a direct connection.';
+      'Set the HTTP proxy used by the backend. If left empty, plugin backend requests can use the server’s proxy environment variables.';
 
   @override
   String get settingsHttpProxyAddressLabel => 'Proxy address';

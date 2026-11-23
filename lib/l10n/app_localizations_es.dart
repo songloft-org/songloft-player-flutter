@@ -4378,11 +4378,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsHttpProxyTitle => 'Proxy HTTP';
 
   @override
-  String get settingsHttpProxyNotConfigured => 'Sin configurar (directo)';
+  String get settingsHttpProxyNotConfigured =>
+      'Sin dirección de proxy configurada';
 
   @override
   String get settingsHttpProxyDialogDesc =>
-      'Establece un proxy HTTP global. Todas las solicitudes salientes del backend (descargas de plugins, comprobaciones de actualizaciones, etc.) pasarán por él. Déjalo vacío para conexión directa.';
+      'Configura el proxy HTTP del servidor. Si dejas el campo vacío, las solicitudes de los plugins en el servidor pueden usar las variables de entorno del proxy.';
 
   @override
   String get settingsHttpProxyAddressLabel => 'Dirección del proxy';
