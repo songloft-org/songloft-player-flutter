@@ -2032,6 +2032,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get playerNext => 'Siguiente';
 
   @override
+  String get playerSeekBackward => 'Retroceder 10 segundos';
+
+  @override
+  String get playerSeekForward => 'Avanzar 10 segundos';
+
+  @override
   String get playerPlaylist => 'Lista de reproducción';
 
   @override

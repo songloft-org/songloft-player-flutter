@@ -172,6 +172,9 @@ class PlayerState {
   /// 是否有当前歌曲
   bool get hasSong => currentSong != null;
 
+  bool get canSeek =>
+      hasSong && !currentSong!.isLive && duration > Duration.zero;
+
   /// 下一首歌曲（仅顺序模式下）
   Song? get nextSong {
     if (!hasNext || playlist.isEmpty) return null;

@@ -10,6 +10,12 @@ Include rule, scope, full owner/repo#number, failure/fix commit SHAs, actual val
 
 ## Entries
 
+### LAYOUT-007 · Budget the time label and seek controls against the player bar's width
+
+- Scope is the Flutter desktop capsule player, [songloft-org/songloft#593](https://github.com/songloft-org/songloft/issues/593), baseline `137bc6936f7780916defb0bdd2d913668051068c`. After adding the two seek buttons, the 800→600 logical pixel resize regression reported a `RenderFlex` overflow. The same resize case passed on the baseline.
+- Use the capsule row's constraints to decide whether to show seek buttons, elapsed time, and secondary tools. Bound the time label by the row width and include both seek targets in that budget. The resize regression and the 600-pixel standard bar test passed, including tapping a seek button near the end of the track.
+- Seen 1× (2026-11-25).
+
 ### PLUGIN-001 · Verify failure paths for remote SVGs
 
 - The initial discovery tile on Flutter baseline `25c4144d8fc6696cd346964c14bc1b6920b99c4b` used `SvgPicture.network`. In Docker Chromium 121, a proxy 404 displayed the fallback and triggered an unhandled exception from the old SVG cache. A wide SVG also expanded the 40 px icon slot to 60 px.

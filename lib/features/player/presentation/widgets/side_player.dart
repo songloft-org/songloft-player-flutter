@@ -196,6 +196,8 @@ class WidescreenSidePlayer extends ConsumerWidget {
           onPause: notifier.togglePlay,
           onPrev: notifier.playPrev,
           onNext: notifier.playNext,
+          onSeekBy: notifier.seekBy,
+          canSeek: state.canSeek,
           size: 52,
         ),
         const SizedBox(height: 12),

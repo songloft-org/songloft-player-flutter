@@ -2009,6 +2009,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playerNext => 'Next';
 
   @override
+  String get playerSeekBackward => 'Rewind 10 seconds';
+
+  @override
+  String get playerSeekForward => 'Forward 10 seconds';
+
+  @override
   String get playerPlaylist => 'Playlist';
 
   @override

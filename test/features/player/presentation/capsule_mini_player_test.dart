@@ -22,6 +22,7 @@ import 'package:songloft_flutter/features/player/presentation/providers/player_p
 import 'package:songloft_flutter/features/player/presentation/widgets/audio_track_control.dart';
 import 'package:songloft_flutter/features/player/presentation/widgets/capsule_mini_player.dart';
 import 'package:songloft_flutter/features/player/presentation/widgets/desktop_player.dart';
+import 'package:songloft_flutter/features/player/presentation/widgets/play_controls.dart';
 import 'package:songloft_flutter/features/player/presentation/widgets/popup_controls.dart';
 import 'package:songloft_flutter/features/player/presentation/widgets/volume_control.dart';
 import 'package:songloft_flutter/features/settings/presentation/providers/song_cache_provider.dart';
@@ -148,6 +149,90 @@ void main() {
     );
     await tester.pump();
   }
+
+  testWidgets(
+    'wide playback bars seek by ten seconds without switching tracks',
+    (tester) async {
+      const rewind = '快退 10 秒';
+      const forward = '快进 10 秒';
+      final state = buildState(currentTime: const Duration(seconds: 5));
+      final notifier = _SeekRecorder(state);
+      await pumpCapsule(
+        tester,
+        capsule: const CapsuleMiniPlayer(),
+        notifier: notifier,
+      );
+      await tester.tap(find.byTooltip(rewind));
+      await tester.tap(find.byTooltip(forward));
+      expect(notifier.seeks, [Duration.zero, const Duration(seconds: 15)]);
+
+      tester.view.physicalSize = const Size(600, 800);
+      await tester.pump();
+      expect(find.byTooltip(rewind), findsNothing);
+      expect(find.byTooltip(forward), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('five full-player controls fit a 320px screen', (tester) async {
+    final deltas = <Duration>[];
+    await pumpCapsule(
+      tester,
+      viewport: const Size(320, 640),
+      capsule: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: PlayControls(
+          isPlaying: false,
+          onPlay: _noop,
+          onPrev: _noop,
+          onNext: _noop,
+          onSeekBy: deltas.add,
+          canSeek: true,
+          size: 76,
+          useRoundedRect: true,
+        ),
+      ),
+    );
+    final previous = tester.getRect(find.byTooltip('上一首'));
+    final rewind = tester.getRect(find.byTooltip('快退 10 秒'));
+    final forward = tester.getRect(find.byTooltip('快进 10 秒'));
+    final next = tester.getRect(find.byTooltip('下一首'));
+    expect(rewind.width, 48);
+    expect(forward.width, 48);
+    expect(previous.right, lessThanOrEqualTo(rewind.left));
+    expect(next.left, greaterThanOrEqualTo(forward.right));
+    expect(rewind.right, lessThan(160));
+    expect(forward.left, greaterThan(160));
+    await tester.tap(find.byTooltip('快退 10 秒'));
+    await tester.tap(find.byTooltip('快进 10 秒'));
+    expect(deltas, [const Duration(seconds: -10), const Duration(seconds: 10)]);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('standard tablet bar keeps both seek targets at 600px', (
+    tester,
+  ) async {
+    final notifier = _SeekRecorder(
+      buildState(currentTime: const Duration(seconds: 195)),
+    );
+    await pumpCapsule(
+      tester,
+      capsule: const Padding(
+        padding: EdgeInsets.only(left: 84),
+        child: DesktopPlayer(),
+      ),
+      navigationStyle: 'standard',
+      viewport: const Size(600, 800),
+      notifier: notifier,
+    );
+    final forward = find.byTooltip('快进 10 秒');
+    final rewind = find.byTooltip('快退 10 秒');
+    expect(tester.getSize(forward).width, 44);
+    expect(tester.getSize(rewind).width, 44);
+    await tester.tap(forward);
+    expect(notifier.seeks, [const Duration(seconds: 200)]);
+    expect(tester.takeException(), isNull);
+  });
 
   /// pill 全圆角在该高度处的轮廓（相对 pill 左边缘的 x）。
   ///

@@ -77,6 +77,9 @@ class CapsuleMiniPlayer extends ConsumerWidget {
     final radius = AppCapsulePlayer.pillRadius(tier.height);
     final notifier = ref.read(playerStateProvider.notifier);
     final song = state.currentSong!;
+    final showTrackControls = ref.watch(
+      miniPlayerControlsProvider.select((controls) => controls.hasPrevNext),
+    );
 
     // 内容行浮在整条胶囊上并垂直居中（上下留白等分）。顶边进度热区因此是**覆盖层**
     // 而不是 `Column` 里的兄弟：当成兄弟会把内容行整块推下去，行中心落到胶囊的
@@ -95,7 +98,10 @@ class CapsuleMiniPlayer extends ConsumerWidget {
             // 行宽不足时（窄窗口 / 手机档）自动收起时间文本，把宽度让给标题
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final showTime = constraints.maxWidth >= tier.minWidthForTime;
+                final width = constraints.maxWidth;
+                final showSeek = !compact && showTrackControls && width >= 620;
+                final seekWidth = showSeek ? 2 * tier.skipHitSize : 0;
+                final showTime = width >= tier.minWidthForTime + seekWidth;
                 return Row(
                   children: [
                     _buildCover(context, theme, song, tier),
@@ -105,10 +111,22 @@ class CapsuleMiniPlayer extends ConsumerWidget {
                     ),
                     if (showTime) ...[
                       const SizedBox(width: 12),
-                      _buildTime(theme, state, tier),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: width / 4),
+                        child: _buildTime(theme, state, tier),
+                      ),
                     ],
                     const SizedBox(width: 8),
-                    ..._buildControls(context, ref, state, notifier, tier),
+                    ..._buildControls(
+                      context,
+                      ref,
+                      state,
+                      notifier,
+                      tier,
+                      showTrackControls: showTrackControls,
+                      showSeek: showSeek,
+                      availableWidth: width,
+                    ),
                   ],
                 );
               },
@@ -285,7 +303,12 @@ class CapsuleMiniPlayer extends ConsumerWidget {
       state.duration.inSeconds.toDouble(),
     );
 
-    return Text('$position / $duration', style: style, maxLines: 1);
+    return Text(
+      '$position / $duration',
+      style: style,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
   }
 
   List<Widget> _buildControls(
@@ -293,9 +316,11 @@ class CapsuleMiniPlayer extends ConsumerWidget {
     WidgetRef ref,
     PlayerState state,
     PlayerNotifier notifier,
-    _CapsuleTier tier,
-  ) {
-    final controls = ref.watch(miniPlayerControlsProvider);
+    _CapsuleTier tier, {
+    required bool showTrackControls,
+    required bool showSeek,
+    required double availableWidth,
+  }) {
     final playButton = CompactPlayButton(
       isPlaying: state.isPlaying,
       isBuffering: state.showBufferingIndicator,
@@ -315,7 +340,7 @@ class CapsuleMiniPlayer extends ConsumerWidget {
             size: 22,
           ),
         ),
-      if (controls.hasPrevNext) ...[
+      if (showTrackControls) ...[
         _buildSkipButton(
           context,
           icon: Icons.skip_previous_rounded,
@@ -323,7 +348,19 @@ class CapsuleMiniPlayer extends ConsumerWidget {
           onPressed: state.hasPrev ? notifier.playPrev : null,
           size: tier.skipHitSize,
         ),
+        if (showSeek)
+          SeekStepButton(
+            forward: false,
+            onSeekBy: state.canSeek ? notifier.seekBy : null,
+            size: tier.skipHitSize,
+          ),
         playButton,
+        if (showSeek)
+          SeekStepButton(
+            forward: true,
+            onSeekBy: state.canSeek ? notifier.seekBy : null,
+            size: tier.skipHitSize,
+          ),
         _buildSkipButton(
           context,
           icon: Icons.skip_next_rounded,
@@ -333,7 +370,8 @@ class CapsuleMiniPlayer extends ConsumerWidget {
         ),
       ] else
         playButton,
-      if (!compact) ..._buildToolbar(context, ref, state, notifier),
+      if (!compact)
+        ..._buildToolbar(context, ref, state, notifier, availableWidth),
     ];
   }
 
@@ -372,13 +410,15 @@ class CapsuleMiniPlayer extends ConsumerWidget {
     WidgetRef ref,
     PlayerState state,
     PlayerNotifier notifier,
+    double availableWidth,
   ) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final song = state.currentSong!;
     final hasLyrics = song.lyricUrl != null;
-    // 内联音量滑块要吃掉近 200dp，只在真正宽裕的窗口里展开
-    final inlineVolume = MediaQuery.sizeOf(context).width >= 1100;
+    // The title and elapsed time share the space left by the fixed buttons.
+    final showExtraTools = availableWidth >= 800;
+    final inlineVolume = availableWidth >= 1020;
 
     return [
       PopupPlayModeControl(
@@ -393,23 +433,24 @@ class CapsuleMiniPlayer extends ConsumerWidget {
           threshold: 160,
         ),
       ),
-      IconButton(
-        onPressed: () => openFullPlayer(context),
-        icon: Icon(
-          Icons.lyrics_rounded,
-          size: 20,
-          color:
-              hasLyrics ||
-                      theme
-                              .extension<SongloftThemeExtension>()
-                              ?.increaseContrast ==
-                          true
-                  ? null
-                  : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+      if (showExtraTools)
+        IconButton(
+          onPressed: () => openFullPlayer(context),
+          icon: Icon(
+            Icons.lyrics_rounded,
+            size: 20,
+            color:
+                hasLyrics ||
+                        theme
+                                .extension<SongloftThemeExtension>()
+                                ?.increaseContrast ==
+                            true
+                    ? null
+                    : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+          ),
+          tooltip: l10n.playerLyrics,
+          visualDensity: VisualDensity.compact,
         ),
-        tooltip: l10n.playerLyrics,
-        visualDensity: VisualDensity.compact,
-      ),
       IconButton(
         onPressed: notifier.togglePlaylistDrawer,
         icon: Icon(
@@ -420,11 +461,13 @@ class CapsuleMiniPlayer extends ConsumerWidget {
         tooltip: l10n.playerPlaylist,
         visualDensity: VisualDensity.compact,
       ),
-      const CastButton(iconSize: 20, visualDensity: VisualDensity.compact),
-      const AudioTrackControl(
-        iconSize: 20,
-        visualDensity: VisualDensity.compact,
-      ),
+      if (showExtraTools) ...[
+        const CastButton(iconSize: 20, visualDensity: VisualDensity.compact),
+        const AudioTrackControl(
+          iconSize: 20,
+          visualDensity: VisualDensity.compact,
+        ),
+      ],
       _buildMoreMenu(context, ref, state, notifier, song, l10n),
     ];
   }

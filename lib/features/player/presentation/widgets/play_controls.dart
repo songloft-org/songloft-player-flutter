@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_dimensions.dart';
@@ -12,6 +14,8 @@ class PlayControls extends StatelessWidget {
   final VoidCallback? onPause;
   final VoidCallback? onPrev;
   final VoidCallback? onNext;
+  final ValueChanged<Duration>? onSeekBy;
+  final bool canSeek;
   final double size;
   final bool isBuffering;
   final bool showGlow;
@@ -26,6 +30,8 @@ class PlayControls extends StatelessWidget {
     this.onPause,
     this.onPrev,
     this.onNext,
+    this.onSeekBy,
+    this.canSeek = false,
     this.size = 48,
     this.isBuffering = false,
     this.showGlow = false,
@@ -34,46 +40,92 @@ class PlayControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final seekBy = onSeekBy;
+    if (seekBy == null) return _buildTransport(context, size, 8);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final playSizeFloor = math.min(size, width / 5);
+        final sideSize = math.min(
+          size <= 40 ? 44.0 : 48.0,
+          (width - playSizeFloor) / 4,
+        );
+        final playSize = math.min(size, width - 4 * sideSize);
+        final gap = ((width - playSize - 4 * sideSize) / 4).clamp(0.0, 8.0);
+        return _buildTransport(
+          context,
+          playSize,
+          gap,
+          sideSize: sideSize,
+          seekBy: seekBy,
+        );
+      },
+    );
+  }
+
+  Widget _buildTransport(
+    BuildContext context,
+    double playSize,
+    double gap, {
+    double? sideSize,
+    ValueChanged<Duration>? seekBy,
+  }) {
     final theme = Theme.of(context);
-    final iconSize = size * 0.5;
-    final playIconSize = size * 0.6;
+    final iconSize =
+        sideSize == null
+            ? size * 0.5
+            : math.min(sideSize, size <= 40 ? 22.0 : 28.0);
+    final trackStyle = IconButton.styleFrom(
+      fixedSize: sideSize == null ? null : Size.square(sideSize),
+      minimumSize: sideSize == null ? null : Size.square(sideSize),
+      padding: sideSize == null ? null : EdgeInsets.zero,
+      tapTargetSize: sideSize == null ? null : MaterialTapTargetSize.shrinkWrap,
+      foregroundColor: theme.colorScheme.onSurface,
+      disabledForegroundColor: theme.colorScheme.onSurface.withValues(
+        alpha: 0.38,
+      ),
+    );
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // 上一首
         IconButton(
           onPressed: hasPrev ? onPrev : null,
           icon: Icon(Icons.skip_previous_rounded, size: iconSize),
           tooltip: AppLocalizations.of(context).playerPrevious,
-          style: IconButton.styleFrom(
-            foregroundColor: theme.colorScheme.onSurface,
-            disabledForegroundColor: theme.colorScheme.onSurface.withValues(
-              alpha: 0.38,
-            ),
-          ),
+          style: trackStyle,
         ),
-        const SizedBox(width: 8),
-        // 播放/暂停（最大按钮）
-        _buildPlayPauseButton(context, playIconSize),
-        const SizedBox(width: 8),
-        // 下一首
+        SizedBox(width: gap),
+        if (seekBy != null) ...[
+          SeekStepButton(
+            forward: false,
+            onSeekBy: canSeek ? seekBy : null,
+            size: sideSize!,
+          ),
+          SizedBox(width: gap),
+        ],
+        _buildPlayPauseButton(context, playSize),
+        SizedBox(width: gap),
+        if (seekBy != null) ...[
+          SeekStepButton(
+            forward: true,
+            onSeekBy: canSeek ? seekBy : null,
+            size: sideSize!,
+          ),
+          SizedBox(width: gap),
+        ],
         IconButton(
           onPressed: hasNext ? onNext : null,
           icon: Icon(Icons.skip_next_rounded, size: iconSize),
           tooltip: AppLocalizations.of(context).playerNext,
-          style: IconButton.styleFrom(
-            foregroundColor: theme.colorScheme.onSurface,
-            disabledForegroundColor: theme.colorScheme.onSurface.withValues(
-              alpha: 0.38,
-            ),
-          ),
+          style: trackStyle,
         ),
       ],
     );
   }
 
-  Widget _buildPlayPauseButton(BuildContext context, double iconSize) {
+  Widget _buildPlayPauseButton(BuildContext context, double size) {
     final theme = Theme.of(context);
     final borderRadius =
         useRoundedRect ? AppRadius.xxlAll : BorderRadius.circular(size);
@@ -119,7 +171,7 @@ class PlayControls extends StatelessWidget {
               height: size,
               child: Icon(
                 isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                size: iconSize,
+                size: size * 0.6,
                 color: theme.colorScheme.onPrimary,
               ),
             ),
@@ -138,6 +190,45 @@ class PlayControls extends StatelessWidget {
             isPlaying ? AppEffects.primaryGlow(theme.colorScheme.primary) : [],
       ),
       child: button,
+    );
+  }
+}
+
+class SeekStepButton extends StatelessWidget {
+  final bool forward;
+  final ValueChanged<Duration>? onSeekBy;
+  final double size;
+
+  const SeekStepButton({
+    super.key,
+    required this.forward,
+    required this.onSeekBy,
+    required this.size,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colors = Theme.of(context).colorScheme;
+    final seekBy = onSeekBy;
+    return IconButton(
+      onPressed:
+          seekBy == null
+              ? null
+              : () => seekBy(Duration(seconds: forward ? 10 : -10)),
+      icon: Icon(
+        forward ? Icons.forward_10_rounded : Icons.replay_10_rounded,
+        size: math.min(size, 28),
+      ),
+      tooltip: forward ? l10n.playerSeekForward : l10n.playerSeekBackward,
+      style: IconButton.styleFrom(
+        minimumSize: Size.square(size),
+        fixedSize: Size.square(size),
+        padding: EdgeInsets.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        foregroundColor: colors.primary,
+        disabledForegroundColor: colors.onSurface.withValues(alpha: 0.38),
+      ),
     );
   }
 }

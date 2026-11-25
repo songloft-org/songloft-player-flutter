@@ -1129,6 +1129,8 @@
   "playerVolumeUp": "音量+",
   "playerPrevious": "上一首",
   "playerNext": "下一首",
+  "playerSeekBackward": "快退 10 秒",
+  "playerSeekForward": "快进 10 秒",
   "playerPlaylist": "播放列表",
   "playerBuffering": "缓冲中",
   "playerCaching": "正在缓存，请稍候…",

@@ -3603,6 +3603,18 @@ abstract class AppLocalizations {
   /// **'下一首'**
   String get playerNext;
 
+  /// No description provided for @playerSeekBackward.
+  ///
+  /// In zh, this message translates to:
+  /// **'快退 10 秒'**
+  String get playerSeekBackward;
+
+  /// No description provided for @playerSeekForward.
+  ///
+  /// In zh, this message translates to:
+  /// **'快进 10 秒'**
+  String get playerSeekForward;
+
   /// No description provided for @playerPlaylist.
   ///
   /// In zh, this message translates to:

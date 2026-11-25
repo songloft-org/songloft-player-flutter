@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -60,21 +62,24 @@ class DesktopPlayer extends ConsumerWidget {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  // 左侧：歌曲信息
-                  Expanded(flex: 3, child: _buildSongInfo(context, state)),
-                  // 中间：播放控制
-                  Expanded(
-                    flex: 4,
-                    child: _buildPlayControls(context, state, notifier),
-                  ),
-                  // 右侧：工具栏
-                  Expanded(
-                    flex: 3,
-                    child: _buildToolbar(context, state, notifier),
-                  ),
-                ],
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final width = constraints.maxWidth;
+                  final transportWidth =
+                      state.hasSong
+                          ? math.min(math.max(216.0, width * 0.4), width * 0.6)
+                          : width * 0.4;
+                  return Row(
+                    children: [
+                      Expanded(child: _buildSongInfo(context, state)),
+                      SizedBox(
+                        width: transportWidth,
+                        child: _buildPlayControls(context, state, notifier),
+                      ),
+                      Expanded(child: _buildToolbar(context, state, notifier)),
+                    ],
+                  );
+                },
               ),
             ),
           ),
@@ -106,10 +111,16 @@ class DesktopPlayer extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Text(
-            AppLocalizations.of(context).playerNoContent,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+          Flexible(
+            child: Text(
+              AppLocalizations.of(context).playerNoContent,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.5,
+                ),
+              ),
             ),
           ),
         ],
@@ -218,6 +229,8 @@ class DesktopPlayer extends ConsumerWidget {
           onPause: notifier.togglePlay,
           onPrev: notifier.playPrev,
           onNext: notifier.playNext,
+          onSeekBy: state.hasSong ? notifier.seekBy : null,
+          canSeek: state.canSeek,
           size: 40,
         ),
         const SizedBox(height: 4),

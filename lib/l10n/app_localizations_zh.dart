@@ -1942,6 +1942,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get playerNext => '下一首';
 
   @override
+  String get playerSeekBackward => '快退 10 秒';
+
+  @override
+  String get playerSeekForward => '快进 10 秒';
+
+  @override
   String get playerPlaylist => '播放列表';
 
   @override

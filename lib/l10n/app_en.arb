@@ -1020,6 +1020,8 @@
   "playerVolumeUp": "Volume up",
   "playerPrevious": "Previous",
   "playerNext": "Next",
+  "playerSeekBackward": "Rewind 10 seconds",
+  "playerSeekForward": "Forward 10 seconds",
   "playerPlaylist": "Playlist",
   "playerBuffering": "Buffering",
   "playerCaching": "Caching, please wait…",

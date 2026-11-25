@@ -1040,6 +1040,8 @@
   "playerVolumeUp": "Subir volumen",
   "playerPrevious": "Anterior",
   "playerNext": "Siguiente",
+  "playerSeekBackward": "Retroceder 10 segundos",
+  "playerSeekForward": "Avanzar 10 segundos",
   "playerPlaylist": "Lista de reproducción",
   "playerBuffering": "Buffering",
   "playerCaching": "Almacenando en caché, espera…",

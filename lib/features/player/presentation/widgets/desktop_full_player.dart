@@ -248,6 +248,8 @@ class _DesktopFullPlayerState extends ConsumerState<DesktopFullPlayer>
                   onPause: notifier.togglePlay,
                   onPrev: notifier.playPrev,
                   onNext: notifier.playNext,
+                  onSeekBy: notifier.seekBy,
+                  canSeek: state.canSeek,
                   size: 52,
                   showGlow: true,
                 ),

@@ -226,10 +226,25 @@ class _MobilePlayerState extends ConsumerState<MobilePlayer>
                 ),
               ),
               const SizedBox(height: 16),
-              // 主控制行（播放模式 + 上一首/播放/下一首 + 收藏）
-              _buildControlsRow(context, state, notifier),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: PlayControls(
+                  isPlaying: state.isPlaying,
+                  hasPrev: state.hasPrev,
+                  hasNext: state.hasNext,
+                  isBuffering: state.showBufferingIndicator,
+                  onPlay: notifier.togglePlay,
+                  onPause: notifier.togglePlay,
+                  onPrev: notifier.playPrev,
+                  onNext: notifier.playNext,
+                  onSeekBy: notifier.seekBy,
+                  canSeek: state.canSeek,
+                  size: 76,
+                  showGlow: true,
+                  useRoundedRect: true,
+                ),
+              ),
               const SizedBox(height: 20),
-              // 工具行（投屏 + 音量 + 队列 + 更多）
               _buildToolBar(context, state, notifier),
               const SizedBox(height: AppSpacing.md),
             ],
@@ -495,84 +510,35 @@ class _MobilePlayerState extends ConsumerState<MobilePlayer>
     );
   }
 
-  /// Spotify 风格控制行：[播放模式] [上一首] [播放/暂停] [下一首] [收藏]
-  Widget _buildControlsRow(
-    BuildContext context,
-    PlayerState state,
-    PlayerNotifier notifier,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // 播放模式
-          SizedBox(
-            width: 48,
-            height: 48,
-            child: PopupPlayModeControl(
-              playMode: state.playMode,
-              onPlayModeChanged: notifier.setPlayMode,
-            ),
-          ),
-          const SizedBox(width: 8),
-          // 主控制按钮
-          PlayControls(
-            isPlaying: state.isPlaying,
-            hasPrev: state.hasPrev,
-            hasNext: state.hasNext,
-            isBuffering: state.showBufferingIndicator,
-            onPlay: notifier.togglePlay,
-            onPause: notifier.togglePlay,
-            onPrev: notifier.playPrev,
-            onNext: notifier.playNext,
-            size: 76,
-            showGlow: true,
-            useRoundedRect: true,
-          ),
-          const SizedBox(width: 8),
-          // 收藏
-          SizedBox(
-            width: 48,
-            height: 48,
-            child: Center(
-              child: FavoriteButton(
-                songId: state.currentSong!.id,
-                songType: state.currentSong!.type,
-                size: 24,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Spotify 风格工具行：[投屏] [音量] [队列]（Web 无投屏时仅 [音量] [队列]）
   Widget _buildToolBar(
     BuildContext context,
     PlayerState state,
     PlayerNotifier notifier,
   ) {
+    final song = state.currentSong!;
+    final tools = <Widget>[
+      PopupPlayModeControl(
+        playMode: state.playMode,
+        onPlayModeChanged: notifier.setPlayMode,
+      ),
+      if (!kIsWeb) const CastButton(iconSize: 20),
+      PopupVolumeControl(
+        volume: state.volume,
+        onVolumeChanged: notifier.setVolume,
+      ),
+      PopupSpeedControl(speed: state.speed, onSpeedChanged: notifier.setSpeed),
+      IconButton(
+        onPressed: () => QueueBottomSheet.show(context),
+        icon: const Icon(Icons.queue_music_rounded, size: 20),
+        tooltip: AppLocalizations.of(context).playerQueueTitle,
+      ),
+      FavoriteButton(songId: song.id, songType: song.type, size: 24),
+    ];
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          if (!kIsWeb) const CastButton(iconSize: 20),
-          PopupVolumeControl(
-            volume: state.volume,
-            onVolumeChanged: notifier.setVolume,
-          ),
-          PopupSpeedControl(
-            speed: state.speed,
-            onSpeedChanged: notifier.setSpeed,
-          ),
-          IconButton(
-            onPressed: () => QueueBottomSheet.show(context),
-            icon: const Icon(Icons.queue_music_rounded, size: 20),
-            tooltip: AppLocalizations.of(context).playerQueueTitle,
-          ),
+          for (final tool in tools) Expanded(child: Center(child: tool)),
         ],
       ),
     );
