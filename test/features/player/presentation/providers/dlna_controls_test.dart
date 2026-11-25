@@ -18,6 +18,11 @@ class _Player extends PlayerNotifier {
     isPlaying: false,
     duration: const Duration(minutes: 3),
   );
+
+  void updatePlayback(String title, Duration position) {
+    final song = state.currentSong!.copyWith(title: title);
+    state = state.copyWith(currentSong: song, currentTime: position);
+  }
 }
 
 class _Casting extends DlnaNotifier {
@@ -95,6 +100,32 @@ void main() {
     container.read(dlnaStateProvider);
     (container.read(dlnaStateProvider.notifier) as _Casting).endSession();
     expect(container.read(activePlaybackStateProvider), same(local));
+  });
+
+  test('恢复播放状态订阅后收到暂停期间及后续的更新', () async {
+    final player = container.read(playerStateProvider.notifier) as _Player;
+    (container.read(dlnaStateProvider.notifier) as _Casting).endSession();
+    final updates = <(String, Duration)>[];
+    final subscription = container.listen(activePlaybackStateProvider, (
+      _,
+      next,
+    ) {
+      updates.add((next.currentSong!.title, next.currentTime));
+    });
+    addTearDown(subscription.close);
+
+    subscription.pause();
+    player.updatePlayback('后台曲目', const Duration(seconds: 12));
+    await container.pump();
+    expect(updates, isEmpty);
+
+    subscription.resume();
+    player.updatePlayback('下一首', const Duration(seconds: 7));
+    await container.pump();
+    expect(updates, [
+      ('后台曲目', const Duration(seconds: 12)),
+      ('下一首', const Duration(seconds: 7)),
+    ]);
   });
 
   test('快速连点按顺序暂停再恢复远端', () async {

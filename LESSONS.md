@@ -10,6 +10,13 @@
 
 ## 条目
 
+### PLAYER-001 · 播放栏订阅恢复后要继续接收切歌和进度
+
+- 范围为 Flutter 播放栏的 `activePlaybackStateProvider`，客户端基线 `6f0a3a2f2c98827ac6e337499d18db7d8ffd75a6`。Windows 2.13.13 的构建使用 Riverpod 3.1.0。报告截图中队列已切歌，播放栏仍显示旧曲目。 [songloft-org/songloft#594](https://github.com/songloft-org/songloft/issues/594) · [Windows 构建](https://github.com/songloft-org/songloft-player-flutter/actions/runs/44850548368/job/136680677773)
+- 验证订阅恢复时，先暂停派生状态的订阅并切歌，再恢复订阅并再次切歌；断言两次通知都包含正确的曲目和进度。Riverpod 3.1.0 两次通知都丢失。上游在 3.2.1 修复恢复时的刷新。 [Riverpod #4679](https://github.com/rrousselGit/riverpod/pull/4679)
+- 提高 `flutter_riverpod` 的最低版本，移除约束旧版 analyzer 的未启用 `custom_lint`。解析到 `flutter_riverpod` 3.3.1 与 `riverpod` 3.2.1 后，订阅回归、桌面播放栏路由返回测试、全量 Flutter 测试和静态分析通过。Docker Chrome 121 用三首夹具歌曲验证了队列打开时切歌、全屏切歌并返回，以及暂停和继续。返回后音频位置从 1.79 秒推进到 3.96 秒，同期进度条填充从 47 像素增至 105 像素。Windows 原生复测待验收。
+- Seen 1× (2026-11-25)。
+
 ### LAYOUT-007 · 按播放栏实际宽度给跳转、时间和标题留位置
 
 - 范围为 Flutter 桌面胶囊播放器，[songloft-org/songloft#593](https://github.com/songloft-org/songloft/issues/593)，基线 `137bc6936f7780916defb0bdd2d913668051068c`。加入两个跳转键后，800→600 逻辑像素的窗口缩放回归报告了 `RenderFlex` 溢出。基线同一缩放用例通过。

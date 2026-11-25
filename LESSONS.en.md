@@ -10,6 +10,13 @@ Include rule, scope, full owner/repo#number, failure/fix commit SHAs, actual val
 
 ## Entries
 
+### PLAYER-001 · Verify track and progress updates after resuming the player bar subscription
+
+- Scope is the Flutter player bar's `activePlaybackStateProvider`, client baseline `6f0a3a2f2c98827ac6e337499d18db7d8ffd75a6`. The Windows 2.13.13 build used Riverpod 3.1.0. The reporter's screenshot shows the queue advancing while the bar still displays the previous track. [songloft-org/songloft#594](https://github.com/songloft-org/songloft/issues/594) · [Windows build](https://github.com/songloft-org/songloft-player-flutter/actions/runs/44850548368/job/136680677773)
+- Pause the derived state subscription and change tracks, then resume and change tracks again. Assert that both notifications contain the expected track and position. Riverpod 3.1.0 dropped both notifications. The upstream 3.2.1 change refreshes the provider when the subscription resumes. [Riverpod #4679](https://github.com/rrousselGit/riverpod/pull/4679)
+- Raise the minimum `flutter_riverpod` version and remove the unused `custom_lint` package that constrained the analyzer to an older version. With `flutter_riverpod` 3.3.1 and `riverpod` 3.2.1, the subscription regression, desktop player bar navigation test, full Flutter suite, and static analysis pass. Docker Chrome 121 used three fixture tracks to verify changing tracks with the queue open, changing tracks in the full-screen player and returning, and pausing and resuming. After returning, the audio position advanced from 1.79 to 3.96 seconds and the progress fill grew from 47 to 105 pixels. Windows-native acceptance is pending.
+- Seen 1× (2026-11-25).
+
 ### LAYOUT-007 · Budget the time label and seek controls against the player bar's width
 
 - Scope is the Flutter desktop capsule player, [songloft-org/songloft#593](https://github.com/songloft-org/songloft/issues/593), baseline `137bc6936f7780916defb0bdd2d913668051068c`. After adding the two seek buttons, the 800→600 logical pixel resize regression reported a `RenderFlex` overflow. The same resize case passed on the baseline.

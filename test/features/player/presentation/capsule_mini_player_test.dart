@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -856,6 +857,46 @@ void main() {
     expect(find.byTooltip('下一首'), findsOneWidget);
   });
 
+  testWidgets('桌面播放栏返回后继续更新曲目和进度', (tester) async {
+    await pumpCapsule(
+      tester,
+      capsule: const DesktopPlayer(),
+      navigationStyle: 'standard',
+      state: buildState(hasPrevNextQueue: false),
+    );
+    final container = tester.container();
+    final player =
+        container.read(playerStateProvider.notifier) as _FakePlayerNotifier;
+    final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+    expect(find.text('胶囊测试歌曲'), findsOneWidget);
+
+    // An opaque route pauses the bar's Consumer while playback continues.
+    unawaited(
+      navigator.push<void>(
+        MaterialPageRoute<void>(builder: (_) => const Scaffold()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(DesktopPlayer), findsNothing);
+    final nextSong = testSong().copyWith(id: 2, title: '后台切换后的歌曲');
+    player.updatePlayback(nextSong, const Duration(seconds: 12));
+    await tester.pumpAndSettle();
+
+    navigator.pop();
+    await tester.pumpAndSettle();
+    expect(find.text(nextSong.title), findsOneWidget);
+    expect(find.text('00:12'), findsOneWidget);
+
+    final laterSong = testSong().copyWith(id: 3, title: '返回后切换的歌曲');
+    player.updatePlayback(laterSong, const Duration(seconds: 7));
+    await tester.pumpAndSettle();
+    expect(find.text(laterSong.title), findsOneWidget);
+    expect(find.text('00:07'), findsOneWidget);
+    player.updatePlayback(laterSong, const Duration(seconds: 8));
+    await tester.pumpAndSettle();
+    expect(find.text('00:08'), findsOneWidget);
+  });
+
   testWidgets('标准模式大屏仍是 90px 底栏 + border-top（不受胶囊重构影响）', (tester) async {
     final theme = ThemeData(
       extensions: const [SongloftThemeExtension(navigationStyle: 'standard')],
@@ -889,6 +930,10 @@ class _FakePlayerNotifier extends PlayerNotifier {
 
   @override
   PlayerState build() => _initial;
+
+  void updatePlayback(Song song, Duration position) {
+    state = state.copyWith(currentSong: song, currentTime: position);
+  }
 }
 
 /// 假 Notifier + seek 记录，用来验证热区坐标 → seek 位置的映射。
