@@ -799,6 +799,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get jspluginBuiltInNavigation => 'Navegación integrada';
 
   @override
+  String get jspluginShowHomeInNavigation => 'Mostrar Inicio en la navegación';
+
+  @override
   String get jspluginShowLibraryInNavigation =>
       'Mostrar Biblioteca en la navegación';
 
@@ -3865,7 +3868,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String settingsTabsEnabledCount(int count) {
-    return '$count pestañas activadas (Inicio y Ajustes siempre se muestran)';
+    return '$count pestañas activadas (Ajustes siempre se muestra)';
   }
 
   @override

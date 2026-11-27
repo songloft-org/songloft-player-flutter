@@ -267,6 +267,7 @@
   "jspluginManagerSubtitle": "Manage plugins and navigation entries",
   "jspluginManagementSection": "Plugin management",
   "jspluginBuiltInNavigation": "Built-in navigation",
+  "jspluginShowHomeInNavigation": "Show Home in navigation",
   "jspluginShowLibraryInNavigation": "Show Library in navigation",
   "jspluginLibraryNavigationHint": "Hiding this entry does not affect your music data.",
   "jspluginUploadPlugin": "Upload Plugin",
@@ -2169,7 +2170,7 @@
   "settingsMenuTitle": "Menu settings",
   "settingsMenuLibrary": "Library",
   "settingsMenuPlaylists": "Playlists",
-  "settingsTabsEnabledCount": "{count} tabs enabled (Home and Settings are always shown)",
+  "settingsTabsEnabledCount": "{count} tabs enabled (Settings is always shown)",
   "@settingsTabsEnabledCount": {
     "placeholders": {
       "count": {

@@ -288,6 +288,7 @@
   "jspluginManagerSubtitle": "Administra plugins y entradas de navegación",
   "jspluginManagementSection": "Gestión de plugins",
   "jspluginBuiltInNavigation": "Navegación integrada",
+  "jspluginShowHomeInNavigation": "Mostrar Inicio en la navegación",
   "jspluginShowLibraryInNavigation": "Mostrar Biblioteca en la navegación",
   "jspluginLibraryNavigationHint": "Ocultar esta entrada no afecta a tus datos musicales.",
   "jspluginUploadPlugin": "Subir plugin",
@@ -2188,7 +2189,7 @@
   "settingsMenuTitle": "Ajustes de menú",
   "settingsMenuLibrary": "Biblioteca",
   "settingsMenuPlaylists": "Listas de reproducción",
-  "settingsTabsEnabledCount": "{count} pestañas activadas (Inicio y Ajustes siempre se muestran)",
+  "settingsTabsEnabledCount": "{count} pestañas activadas (Ajustes siempre se muestra)",
   "@settingsTabsEnabledCount": {
     "placeholders": {
       "count": {

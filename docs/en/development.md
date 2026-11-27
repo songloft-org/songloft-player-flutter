@@ -10,11 +10,11 @@ See the [AI development workflow](ai-development.md) for continuous execution, v
 
 ## Navigation and plugins
 
-Entry: Settings → Extensions → Navigation & plugins. Sections appear as Plugin management → Built-in navigation → Plugin navigation order. The Library switch sits below the plugin list; Appearance no longer repeats it. The count, fixed Home/Settings explanation and mobile overflow hint share the footer.
+The Built-in navigation section under Settings → Extensions → Navigation & plugins has switches for Home and Library, below the plugin list. The footer shows the tab count, explains that Settings is always visible, and describes mobile overflow.
 
-“Show Library in navigation” only changes navigation visibility and does not affect music data. It reuses `/settings/tab-config` and the existing shared save state. Changing Library preserves every plugin preference and its order; disabled plugins consume no navigation slots. Library remains configurable without plugins. Read errors, in-flight saves and additions beyond the twelve-item limit disable the relevant operations.
+Home is visible by default. With Home hidden, the app opens the first visible destination among Library, active plugin tabs in their configured order, and Settings. Both switches save through `/settings/tab-config` and preserve plugin preferences and ordering. Library and active plugin tabs share a limit of ten.
 
-Validation: `flutter analyze`, all 656 tests and the embedded Web build pass. Docker Chromium exercises Chinese 1280px/390px and English wide layouts, with screenshots visually reviewed. The isolated real backend confirms that Library only changes navigation visibility, preserving every plugin preference and its order; Appearance has no duplicate switch. Chinese, English and Spanish strings and generated output are updated. Self-review also changes the Appearance category description to “Theme and display” so it no longer points to the relocated menu settings. Evidence is in `/tmp/issue-501-navigation-flutter-{zh,en}.json` and matching PNGs. Native Flutter devices have not been tested.
+The Library switch in #501 passed `flutter analyze`, all 656 tests, and the embedded Web build. Docker Chromium exercised Chinese 1280px/390px and English wide layouts, with screenshots reviewed. The isolated backend confirmed that the switch changes Library visibility and preserves all plugin preferences and ordering. Appearance had one fewer control because the switch moved to Built-in navigation. The evidence from that run is in `/tmp/issue-501-navigation-flutter-{zh,en}.json` and matching PNGs.
 
 ## GitHub community plugin discovery
 

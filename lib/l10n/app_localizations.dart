@@ -1455,6 +1455,12 @@ abstract class AppLocalizations {
   /// **'内置导航'**
   String get jspluginBuiltInNavigation;
 
+  /// No description provided for @jspluginShowHomeInNavigation.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示首页入口'**
+  String get jspluginShowHomeInNavigation;
+
   /// No description provided for @jspluginShowLibraryInNavigation.
   ///
   /// In zh, this message translates to:
@@ -6624,7 +6630,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsTabsEnabledCount.
   ///
   /// In zh, this message translates to:
-  /// **'已启用 {count} 个标签（首页和设置固定显示）'**
+  /// **'已启用 {count} 个标签（设置固定显示）'**
   String settingsTabsEnabledCount(int count);
 
   /// No description provided for @settingsTabsCollapseHint.

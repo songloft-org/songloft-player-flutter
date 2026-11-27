@@ -26,14 +26,16 @@ class ActiveDestinations {
     final destinations = <NavDestination>[];
     final indexToRoute = <String>[];
 
-    destinations.add(
-      NavDestination(
-        label: l10n.navHome,
-        icon: const Icon(Icons.home_outlined),
-        selectedIcon: const Icon(Icons.home),
-      ),
-    );
-    indexToRoute.add(AppRoutes.home);
+    if (config.showHome) {
+      destinations.add(
+        NavDestination(
+          label: l10n.navHome,
+          icon: const Icon(Icons.home_outlined),
+          selectedIcon: const Icon(Icons.home),
+        ),
+      );
+      indexToRoute.add(AppRoutes.home);
+    }
 
     if (config.showLibrary) {
       destinations.add(

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/a11y/web_semantics_controller.dart';
+import '../../core/router/app_router.dart';
 import '../../core/theme/responsive.dart';
 import '../../core/updater/patch_update_dialog.dart';
 import '../../features/auth/domain/auth_state.dart';
@@ -221,7 +222,7 @@ class _ShellLayoutState extends ConsumerState<ShellLayout> {
       if (idx != null) return idx;
     }
 
-    // 默认返回首页索引
+    // 默认返回第一个可见标签的索引
     return 0;
   }
 
@@ -254,6 +255,32 @@ class _ShellLayoutState extends ConsumerState<ShellLayout> {
 
     // 获取当前路由位置
     final location = GoRouterState.of(context).uri.path;
+    if (location == AppRoutes.home) {
+      final waitingForPlugins =
+          !tabConfig.showHome &&
+          !tabConfig.showLibrary &&
+          tabConfig.pluginTabs.isNotEmpty &&
+          ref.watch(
+            jsPluginsProvider.select((v) => !v.hasValue && !v.hasError),
+          );
+      if ((!tabConfigAsync.hasValue && !tabConfigAsync.hasError) ||
+          waitingForPlugins) {
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      }
+      if (!tabConfig.showHome) {
+        final router = GoRouter.of(context);
+        final destination = activeDest.indexToRoute.first;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted &&
+              router.routeInformationProvider.value.uri.path ==
+                  AppRoutes.home &&
+              ref.read(tabConfigProvider).value?.showHome == false) {
+            Router.neglect(context, () => router.go(destination));
+          }
+        });
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      }
+    }
     final currentIndex = _getCurrentIndex(location, activeDest);
 
     // 确保收藏系统被初始化（FavoriteNotifier.build 中自动调度）

@@ -158,17 +158,33 @@ void main() {
     ]);
   });
 
-  testWidgets('无插件时仍可修改曲库入口，页尾显示固定入口说明', (tester) async {
+  testWidgets('无插件时可关闭首页和曲库，并恢复首页', (tester) async {
     final api = _SettingsApi(TabConfig.defaultConfig());
     await pump(tester, api, [], manager: true);
     expect(find.text('内置导航'), findsOneWidget);
-    expect(find.textContaining('首页和设置固定显示'), findsOneWidget);
+    expect(find.textContaining('设置固定显示'), findsOneWidget);
+    final home = find.byKey(const ValueKey('tab-toggle-home'));
+    await tester.ensureVisible(home);
+    await tester.tap(home);
+    await tester.pumpAndSettle();
+    expect(api.saved.showHome, isFalse);
+    expect(api.saved.showLibrary, isTrue);
     final library = find.byKey(const ValueKey('tab-toggle-library'));
     await tester.ensureVisible(library);
     await tester.tap(library);
     await tester.pumpAndSettle();
     expect(api.saved.showLibrary, isFalse);
+    expect(api.saved.showHome, isFalse);
     expect(api.saved.pluginTabs, isEmpty);
+    final l10n = AppLocalizations.of(tester.element(home));
+    expect(ActiveDestinations.compute(api.saved, [], l10n).indexToRoute, [
+      '/settings',
+    ]);
+    await tester.ensureVisible(home);
+    await tester.tap(home);
+    await tester.pumpAndSettle();
+    expect(api.saved.showHome, isTrue);
+    expect(api.saved.showLibrary, isFalse);
   });
 
   testWidgets('导航满额时不能添加曲库入口，移除插件后可以添加', (tester) async {

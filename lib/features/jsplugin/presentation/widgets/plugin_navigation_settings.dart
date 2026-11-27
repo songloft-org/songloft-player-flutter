@@ -47,10 +47,8 @@ class PluginNavigationToggle extends ConsumerWidget {
     final visible = config?.pluginTabs.any((e) => e.entryPath == path) ?? false;
     final atLimit =
         config != null &&
-        2 +
-                (config.showLibrary ? 1 : 0) +
-                config.activeEntries(pluginsAsync.value ?? []).length >=
-            12;
+        config.visibleTabCount(pluginsAsync.value ?? []) >=
+            config.maxVisibleTabs;
     final ready =
         !busy &&
         !ref.watch(tabConfigSavingProvider) &&
@@ -71,7 +69,7 @@ class PluginNavigationToggle extends ConsumerWidget {
         !plugin.isActive
             ? l10n.jspluginNavigationDisabledHint
             : atLimit && !visible
-            ? l10n.settingsMaxTabsLimit(12)
+            ? l10n.settingsMaxTabsLimit(config.maxVisibleTabs)
             : l10n.jspluginShowInNavigationHint,
       ),
       value: visible,
@@ -113,10 +111,8 @@ class BuiltInNavigationSettings extends ConsumerWidget {
     final config = configAsync.value;
     final atLimit =
         config != null &&
-        2 +
-                (config.showLibrary ? 1 : 0) +
-                config.activeEntries(pluginsAsync.value ?? []).length >=
-            12;
+        config.visibleTabCount(pluginsAsync.value ?? []) >=
+            config.maxVisibleTabs;
     final ready =
         !ref.watch(tabConfigSavingProvider) &&
         configAsync.hasValue &&
@@ -140,6 +136,20 @@ class BuiltInNavigationSettings extends ConsumerWidget {
               child: Text(l10n.commonRetry),
             ),
           ),
+        SwitchListTile(
+          key: const ValueKey('tab-toggle-home'),
+          secondary: const Icon(Icons.home_outlined),
+          title: Text(l10n.jspluginShowHomeInNavigation),
+          value: config?.showHome ?? true,
+          onChanged:
+              !ready || config == null
+                  ? null
+                  : (value) => _saveNavigationConfig(
+                    context,
+                    ref,
+                    config.copyWith(showHome: value),
+                  ),
+        ),
         SwitchListTile(
           key: const ValueKey('tab-toggle-library'),
           secondary: const Icon(Icons.library_music_outlined),
@@ -174,17 +184,15 @@ class NavigationSummary extends ConsumerWidget {
       return const SizedBox.shrink();
     }
     final config = configAsync.requireValue;
-    final count =
-        2 +
-        (config.showLibrary ? 1 : 0) +
-        config.activeEntries(pluginsAsync.requireValue).length;
+    final count = config.visibleTabCount(pluginsAsync.requireValue);
+    final max = config.maxVisibleTabs;
     final l10n = AppLocalizations.of(context);
     return Padding(
       key: const ValueKey('navigation-summary'),
       padding: const EdgeInsets.all(16),
       child: Text(
         '${l10n.settingsTabsEnabledCount(count)}\n${l10n.settingsTabsCollapseHint}'
-        '${count >= 12 ? '\n${l10n.settingsMaxTabsLimit(12)}' : ''}',
+        '${count >= max ? '\n${l10n.settingsMaxTabsLimit(max)}' : ''}',
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
           color: Theme.of(context).colorScheme.onSurfaceVariant,

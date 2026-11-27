@@ -161,11 +161,13 @@ class PluginTabEntry {
 
 /// 底部导航栏 Tab 配置
 class TabConfig {
+  final bool showHome;
   final bool showLibrary;
   final bool showPlaylists;
   final List<PluginTabEntry> pluginTabs;
 
   TabConfig({
+    this.showHome = true,
     required this.showLibrary,
     required this.showPlaylists,
     required this.pluginTabs,
@@ -176,6 +178,7 @@ class TabConfig {
 
   factory TabConfig.fromJson(Map<String, dynamic> json) {
     return TabConfig(
+      showHome: json['show_home'] as bool? ?? true,
       showLibrary: json['show_library'] as bool? ?? true,
       showPlaylists: json['show_playlists'] as bool? ?? true,
       pluginTabs:
@@ -187,20 +190,31 @@ class TabConfig {
   }
 
   Map<String, dynamic> toJson() => {
+    'show_home': showHome,
     'show_library': showLibrary,
     'show_playlists': showPlaylists,
     'plugin_tabs': pluginTabs.map((e) => e.toJson()).toList(),
   };
 
   TabConfig copyWith({
+    bool? showHome,
     bool? showLibrary,
     bool? showPlaylists,
     List<PluginTabEntry>? pluginTabs,
   }) => TabConfig(
+    showHome: showHome ?? this.showHome,
     showLibrary: showLibrary ?? this.showLibrary,
     showPlaylists: showPlaylists ?? this.showPlaylists,
     pluginTabs: pluginTabs ?? this.pluginTabs,
   );
+
+  int get maxVisibleTabs => showHome ? 12 : 11;
+
+  int visibleTabCount(List<JSPlugin> plugins) =>
+      1 +
+      (showHome ? 1 : 0) +
+      (showLibrary ? 1 : 0) +
+      activeEntries(plugins).length;
 
   // 歌单已并入曲库，不再计入底部 tab 数量（showPlaylists 字段仅为兼容旧配置保留）。
 

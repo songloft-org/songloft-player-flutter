@@ -793,6 +793,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get jspluginBuiltInNavigation => 'Built-in navigation';
 
   @override
+  String get jspluginShowHomeInNavigation => 'Show Home in navigation';
+
+  @override
   String get jspluginShowLibraryInNavigation => 'Show Library in navigation';
 
   @override
@@ -3813,7 +3816,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String settingsTabsEnabledCount(int count) {
-    return '$count tabs enabled (Home and Settings are always shown)';
+    return '$count tabs enabled (Settings is always shown)';
   }
 
   @override

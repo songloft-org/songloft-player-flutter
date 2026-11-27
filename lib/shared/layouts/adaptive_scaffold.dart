@@ -159,6 +159,26 @@ class AdaptiveScaffold extends StatelessWidget {
   }
 
   Widget _buildStandardNav(BuildContext context) {
+    if (destinations.length == 1) {
+      final dest = destinations.single;
+      final theme = NavigationBarTheme.of(context);
+      return Material(
+        color:
+            theme.backgroundColor ??
+            Theme.of(context).colorScheme.surfaceContainer,
+        child: SafeArea(
+          child: SizedBox(
+            width: double.infinity,
+            height: theme.height ?? 80,
+            child: TextButton.icon(
+              onPressed: () => onDestinationSelected(0),
+              icon: dest.selectedIcon,
+              label: Text(dest.label),
+            ),
+          ),
+        ),
+      );
+    }
     final hasOverflow = destinations.length > _mobileMaxVisible;
 
     if (!hasOverflow) {

@@ -757,6 +757,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get jspluginBuiltInNavigation => '内置导航';
 
   @override
+  String get jspluginShowHomeInNavigation => '显示首页入口';
+
+  @override
   String get jspluginShowLibraryInNavigation => '显示曲库入口';
 
   @override
@@ -3644,7 +3647,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String settingsTabsEnabledCount(int count) {
-    return '已启用 $count 个标签（首页和设置固定显示）';
+    return '已启用 $count 个标签（设置固定显示）';
   }
 
   @override
