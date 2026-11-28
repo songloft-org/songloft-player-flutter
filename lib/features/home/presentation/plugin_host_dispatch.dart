@@ -19,16 +19,22 @@ import '../../player/presentation/providers/player_provider.dart';
 /// Cookie 读取能力由调用方通过 [cookieProvider] 注入（仅 native 平台提供实现）。
 typedef CookieProvider = Future<Map<String, String>> Function(String origin);
 
+bool isPluginPlayerUiCall(Map<dynamic, dynamic> request) =>
+    request['ns'] == 'player' &&
+    (request['method'] == 'openPlayer' || request['method'] == 'openQueue');
+
 class PluginHostDispatcher {
   PluginHostDispatcher(
     this.ref, {
     required this.platformName,
     this.cookieProvider,
+    this.openPlayerUi,
   });
 
   final WidgetRef ref;
   final String platformName;
   final CookieProvider? cookieProvider;
+  final void Function({required bool queue})? openPlayerUi;
 
   /// 处理一次调用，统一返回 `{ok:true, data}` 或 `{ok:false, error}`。
   Future<Map<String, dynamic>> handleCall(Map<String, dynamic> req) async {
@@ -77,7 +83,14 @@ class PluginHostDispatcher {
           return {
             'version': AppConfig.frontendVersion,
             'platform': platformName,
-            'capabilities': ['player'],
+            'capabilities': [
+              'player',
+              if (openPlayerUi != null) ...[
+                'player.playerBar',
+                'player.openPlayer',
+                'player.openQueue',
+              ],
+            ],
           };
       }
       throw Exception('unknown host method: $method');
@@ -107,6 +120,12 @@ class PluginHostDispatcher {
     }
 
     if (ns == 'player') {
+      if (method == 'openPlayer' || method == 'openQueue') {
+        final open = openPlayerUi;
+        if (open == null) throw StateError('player UI is unavailable');
+        open(queue: method == 'openQueue');
+        return null;
+      }
       final notifier = ref.read(playerStateProvider.notifier);
       switch (method) {
         case 'getState':

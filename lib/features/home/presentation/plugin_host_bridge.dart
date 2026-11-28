@@ -9,6 +9,7 @@ import '../../../core/utils/webview_support.dart';
 import '../../player/domain/player_state.dart';
 import '../../player/presentation/providers/player_provider.dart';
 import 'plugin_host_dispatch.dart';
+import 'plugin_player_ui.dart';
 
 /// 插件页 ↔ Flutter 宿主的**原生**桥接（客户端 SDK 的能力层，native 平台）。
 ///
@@ -30,11 +31,20 @@ mixin PluginHostBridgeMixin<T extends ConsumerStatefulWidget>
   String? _lastPushedStateSig;
   PluginHostDispatcher? _dispatcher;
 
+  bool get isPluginUiActive;
+
   PluginHostDispatcher get _hostDispatcher =>
       _dispatcher ??= PluginHostDispatcher(
         ref,
         platformName: _platformName(),
         cookieProvider: _getCookiesForOrigin,
+        openPlayerUi:
+            ({required queue}) => openPluginPlayerUi(
+              context,
+              ref,
+              queue: queue,
+              isActive: () => isPluginUiActive,
+            ),
       );
 
   Future<Map<String, String>> _getCookiesForOrigin(String origin) async {

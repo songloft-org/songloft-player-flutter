@@ -16,6 +16,14 @@ AI 任务的连续执行、验证证据、跨仓库 Issue 排查和经验复盘�
 
 曲库开关在 #501 中已通过 `flutter analyze`、完整 656 项测试和嵌入 Web 构建。Docker Chromium 中文 1280px/390px 与英文宽屏实际操作并目测截图，真实临时后端确认曲库开关只改变入口、插件偏好与顺序完整保留，外观页无重复开关。当时的证据为 `/tmp/issue-501-navigation-flutter-{zh,en}.json` 和同前缀 PNG。
 
+### 插件复用宿主播放器
+
+在插件包中添加 `static/songloft-ui.json`，内容为 `{"ui":{"playerBar":"host"}}`。插件 Tab 和独立插件页会在当前有歌曲时显示宿主播放栏，并为它预留空间。没有显式声明的插件沿用原来的布局。
+
+通过 `host.getInfo()` 检查 `capabilities` 中的 `player.playerBar`、`player.openPlayer` 和 `player.openQueue`。从 `@songloft/client-sdk` 导入 `player`，或使用更新后的 `window.SongloftPlugin.player`。调用 `player.openPlayer()` 打开当前歌曲的全屏播放页，调用 `player.openQueue()` 打开宿主队列。两个调用都不需要播放栏声明。
+
+2026-11-27 在 Linux 上使用 Flutter 3.44.8，`flutter analyze`、187 项相关测试和嵌入式 Web 构建通过。Docker Chrome 121 用已安装的测试插件验证了普通 Tab、声明播放栏的 Tab 和独立插件页。两个声明页都让出 66 像素，打开队列或全屏后可返回原 iframe 文档。原生设备未运行。[songloft-org/songloft#599](https://github.com/songloft-org/songloft/issues/599)
+
 ## GitHub 社区插件发现
 
 入口：设置 → 扩展 → 插件商店 → 选源菜单 →「GitHub 发现」。这是独立发现页面，不作为订阅源保存；返回后保留商店的源和搜索状态，源设置按钮继续管理订阅源。

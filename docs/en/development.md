@@ -16,6 +16,14 @@ Home is visible by default. With Home hidden, the app opens the first visible de
 
 The Library switch in #501 passed `flutter analyze`, all 656 tests, and the embedded Web build. Docker Chromium exercised Chinese 1280px/390px and English wide layouts, with screenshots reviewed. The isolated backend confirmed that the switch changes Library visibility and preserves all plugin preferences and ordering. Appearance had one fewer control because the switch moved to Built-in navigation. The evidence from that run is in `/tmp/issue-501-navigation-flutter-{zh,en}.json` and matching PNGs.
 
+### Host playback UI for plugins
+
+Add `static/songloft-ui.json` to the plugin package with `{"ui":{"playerBar":"host"}}`. Plugin tabs and standalone plugin pages reserve space for the host player bar when a song is loaded. Plugins without this explicit declaration retain their existing layout.
+
+Check `host.getInfo()` capabilities for `player.playerBar`, `player.openPlayer`, and `player.openQueue`. Import `player` from `@songloft/client-sdk` or use the updated `window.SongloftPlugin.player`. Call `player.openPlayer()` to open the current song in the fullscreen player or `player.openQueue()` to open the host queue. Both calls are available independently of the bar declaration.
+
+On November 27, 2026, `flutter analyze`, 187 related tests, and the embedded Web build passed on Linux with Flutter 3.44.8. Docker Chrome 121 exercised an ordinary plugin tab, an opt-in tab, and an opt-in standalone page. Both opt-in pages reserved 66 pixels and returned to the same iframe document after opening the queue or fullscreen player. Native device checks were not run. [songloft-org/songloft#599](https://github.com/songloft-org/songloft/issues/599)
+
 ## GitHub community plugin discovery
 
 Entry: Settings → Extensions → Plugin Store → source menu → GitHub discovery. This separate page is not saved as a subscription source. Returning preserves the store source and search; source settings still manage subscriptions.

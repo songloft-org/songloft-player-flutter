@@ -6,6 +6,7 @@ import '../../../core/storage/secure_storage.dart';
 import '../../../core/utils/webview_support.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../settings/presentation/providers/settings_provider.dart';
+import 'plugin_player_ui.dart';
 import 'plugin_theme_utils.dart';
 import 'plugin_unsupported_view.dart';
 import 'render/plugin_render_controller.dart';
@@ -114,12 +115,15 @@ class _PluginWebViewPageState extends ConsumerState<PluginWebViewPage> {
                   ? PluginUnsupportedView(url: _buildPluginUrl(theme))
                   : engine == null
                   ? const Center(child: CircularProgressIndicator())
-                  : PluginRenderView(
-                    url: _buildPluginUrl(theme),
-                    theme: theme,
-                    engine: engine,
-                    onControllerReady:
-                        (controller) => _renderController = controller,
+                  : PluginPlayerLayout(
+                    entryPath: entryPath,
+                    child: PluginRenderView(
+                      url: _buildPluginUrl(theme),
+                      theme: theme,
+                      engine: engine,
+                      onControllerReady:
+                          (controller) => _renderController = controller,
+                    ),
                   ),
         ),
       ),

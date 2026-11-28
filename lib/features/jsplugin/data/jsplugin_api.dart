@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -424,6 +425,24 @@ class JSPluginApi {
   final Dio dio;
 
   JSPluginApi({required this.dio});
+
+  Future<bool> declaresHostPlayerBar(String entryPath) async {
+    try {
+      final response = await dio.get<String>(
+        '${AppConfig.apiPrefix}/jsplugin/${Uri.encodeComponent(entryPath)}'
+        '/static/songloft-ui.json',
+        options: Options(responseType: ResponseType.plain),
+      );
+      final manifest = jsonDecode(response.data ?? '');
+      final ui = manifest is Map ? manifest['ui'] : null;
+      return ui is Map && ui['playerBar'] == 'host';
+    } on DioException {
+      return false;
+    } on FormatException {
+      // A missing file can return the plugin's HTML entry page with HTTP 200.
+      return false;
+    }
+  }
 
   /// 获取所有 JS 插件
   /// GET /api/v1/jsplugins

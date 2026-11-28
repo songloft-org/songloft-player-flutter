@@ -32,6 +32,7 @@ class PluginRenderSurfaceWebView extends ConsumerStatefulWidget {
   /// 需要大量文本输入的场景走全屏页（传 true，即默认）。
   /// iOS/macOS 忽略此项（WKWebView 无此问题）。
   final bool useHybridComposition;
+  final bool isActive;
 
   final VoidCallback onLoadStart;
   final VoidCallback onLoadStop;
@@ -47,6 +48,7 @@ class PluginRenderSurfaceWebView extends ConsumerStatefulWidget {
     required this.onError,
     required this.onControllerReady,
     this.useHybridComposition = true,
+    this.isActive = true,
   });
 
   @override
@@ -60,6 +62,9 @@ class _PluginRenderSurfaceWebViewState
     implements PluginRenderController {
   InAppWebViewController? _controller;
   bool _pageReady = false;
+
+  @override
+  bool get isPluginUiActive => widget.isActive;
 
   /// `build()` 里读 `Theme.of(context)` 存下来，`onLoadStop` 那种拿不到 context 的
   /// 回调里复用。

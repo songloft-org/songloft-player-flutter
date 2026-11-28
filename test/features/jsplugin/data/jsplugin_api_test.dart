@@ -6,6 +6,8 @@ import 'package:songloft_flutter/features/jsplugin/data/jsplugin_api.dart';
 
 class _RegistryAdapter implements HttpClientAdapter {
   RequestOptions? request;
+  String body =
+      '{"plugins":[],"total":0,"page":1,"page_size":20,"results":[],"has_update":false}';
 
   @override
   Future<ResponseBody> fetch(
@@ -15,7 +17,7 @@ class _RegistryAdapter implements HttpClientAdapter {
   ) async {
     request = options;
     return ResponseBody.fromString(
-      '{"plugins":[],"total":0,"page":1,"page_size":20,"results":[],"has_update":false}',
+      body,
       200,
       headers: {
         Headers.contentTypeHeader: [Headers.jsonContentType],
@@ -28,6 +30,30 @@ class _RegistryAdapter implements HttpClientAdapter {
 }
 
 void main() {
+  test('插件播放栏只接受静态声明中的显式 host 值', () async {
+    final adapter = _RegistryAdapter();
+    final api = JSPluginApi(
+      dio: Dio(BaseOptions(baseUrl: 'http://localhost:58091'))
+        ..httpClientAdapter = adapter,
+    );
+
+    adapter.body = '{"ui":{"playerBar":"host"}}';
+    expect(await api.declaresHostPlayerBar('music'), isTrue);
+    expect(
+      adapter.request?.path,
+      '/api/v1/jsplugin/music/static/songloft-ui.json',
+    );
+    for (final body in [
+      '<!doctype html><title>SPA fallback</title>',
+      '{"ui":{}}',
+      '{"ui":{"playerBar":true}}',
+      '{"ui":{"playerBar":"plugin"}}',
+    ]) {
+      adapter.body = body;
+      expect(await api.declaresHostPlayerBar('music'), isFalse, reason: body);
+    }
+  });
+
   test('插件安装和更新使用独立超时，普通查询保留默认值', () async {
     final adapter = _RegistryAdapter();
     final dio = Dio(

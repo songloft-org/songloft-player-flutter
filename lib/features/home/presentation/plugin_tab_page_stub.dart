@@ -13,6 +13,7 @@ import '../../player/domain/player_state.dart';
 import '../../player/presentation/providers/player_provider.dart';
 import '../../settings/presentation/providers/settings_provider.dart';
 import 'plugin_host_dispatch.dart';
+import 'plugin_player_ui.dart';
 import 'plugin_iframe_diagnostics.dart';
 import 'plugin_theme_utils.dart';
 import 'render/plugin_color_scheme.dart';
@@ -86,7 +87,18 @@ class _PluginTabPageState extends ConsumerState<PluginTabPage> {
   String? _lastPushedStateSig;
 
   PluginHostDispatcher get _hostDispatcher =>
-      _dispatcher ??= PluginHostDispatcher(ref, platformName: 'web');
+      _dispatcher ??= PluginHostDispatcher(
+        ref,
+        platformName: 'web',
+        openPlayerUi:
+            ({required queue}) => openPluginPlayerUi(
+              context,
+              ref,
+              queue: queue,
+              isActive: () => widget.isActive,
+              suspendPluginInput: PluginTabPage.setPointerEventsSuspended,
+            ),
+      );
 
   String _buildPluginUrl(String theme) {
     final baseUrl =
@@ -185,6 +197,10 @@ class _PluginTabPageState extends ConsumerState<PluginTabPage> {
     final dartData = event.data?.dartify();
     if (dartData is! Map) return;
     if (dartData['type'] != 'songloft-host-call') return;
+    if (isPluginPlayerUiCall(dartData) &&
+        event.origin != Uri.base.resolve(iframe.src).origin) {
+      return;
+    }
 
     final req = Map<String, dynamic>.from(dartData);
     final id = req['id'];
@@ -233,6 +249,9 @@ class _PluginTabPageState extends ConsumerState<PluginTabPage> {
     // 无条件调用，由 `_syncTheme` 内部去重（换主题包时 theme 不变而色板变了）。
     _syncTheme();
 
-    return HtmlElementView(viewType: _viewType);
+    return PluginPlayerLayout(
+      entryPath: widget.entryPath,
+      child: HtmlElementView(viewType: _viewType),
+    );
   }
 }

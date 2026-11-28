@@ -6,6 +6,7 @@ import '../../../core/storage/secure_storage.dart';
 import '../../../core/utils/webview_support.dart';
 import '../../settings/presentation/providers/settings_provider.dart';
 import 'plugin_tab_back_registry.dart';
+import 'plugin_player_ui.dart';
 import 'plugin_theme_utils.dart';
 import 'plugin_unsupported_view.dart';
 import 'render/plugin_render_controller.dart';
@@ -96,21 +97,25 @@ class _PluginTabPageState extends ConsumerState<PluginTabPage> {
               ? PluginUnsupportedView(url: _buildPluginUrl(theme))
               : engine == null
               ? const Center(child: CircularProgressIndicator())
-              : PluginRenderView(
-                url: _buildPluginUrl(theme),
-                theme: theme,
-                engine: engine,
-                // Tab 靠 shell 层 Offstage 保活，Hybrid Composition 下反复切换
-                // 会让 overlay 重建异常、把底部 NavigationBar 抹成黑块，故用
-                // Virtual Display（songloft-org/songloft#273）。
-                useHybridComposition: false,
-                onControllerReady: (controller) {
-                  _renderController = controller;
-                  PluginTabBackRegistry.register(widget.entryPath, () {
-                    return _renderController?.goBackIfPossible() ??
-                        Future.value(false);
-                  });
-                },
+              : PluginPlayerLayout(
+                entryPath: widget.entryPath,
+                child: PluginRenderView(
+                  url: _buildPluginUrl(theme),
+                  theme: theme,
+                  engine: engine,
+                  isActive: widget.isActive,
+                  // Tab 靠 shell 层 Offstage 保活，Hybrid Composition 下反复切换
+                  // 会让 overlay 重建异常、把底部 NavigationBar 抹成黑块，故用
+                  // Virtual Display（songloft-org/songloft#273）。
+                  useHybridComposition: false,
+                  onControllerReady: (controller) {
+                    _renderController = controller;
+                    PluginTabBackRegistry.register(widget.entryPath, () {
+                      return _renderController?.goBackIfPossible() ??
+                          Future.value(false);
+                    });
+                  },
+                ),
               ),
     );
   }

@@ -34,6 +34,7 @@ class PluginRenderView extends StatefulWidget {
 
   /// 见 `PluginRenderSurfaceWebView.useHybridComposition`。
   final bool useHybridComposition;
+  final bool isActive;
 
   /// 渲染面就绪时回调，宿主用它做返回键处理与焦点释放。
   ///
@@ -47,6 +48,7 @@ class PluginRenderView extends StatefulWidget {
     required this.engine,
     required this.onControllerReady,
     this.useHybridComposition = true,
+    this.isActive = true,
   });
 
   @override
@@ -219,6 +221,7 @@ class _PluginRenderViewState extends State<PluginRenderView>
       url: widget.url,
       theme: widget.theme,
       useHybridComposition: widget.useHybridComposition,
+      isActive: widget.isActive && _appVisible,
       onLoadStart: _onLoadStart,
       onLoadStop: _onLoadStop,
       onError: _onError,

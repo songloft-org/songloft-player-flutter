@@ -15,9 +15,11 @@ import '../../player/domain/player_state.dart';
 import '../../player/presentation/providers/player_provider.dart';
 import '../../settings/presentation/providers/settings_provider.dart';
 import 'plugin_host_dispatch.dart';
+import 'plugin_player_ui.dart';
 import 'plugin_iframe_diagnostics.dart';
 import 'plugin_theme_utils.dart';
 import 'render/plugin_color_scheme.dart';
+import 'render/plugin_render_engine_provider.dart';
 
 /// JS `Object.is` —— 用于精确比较两个 JS 对象引用（判断消息是否来自本 iframe）。
 @JS('Object.is')
@@ -62,7 +64,20 @@ class _PluginWebViewPageState extends ConsumerState<PluginWebViewPage> {
   String? _lastPushedStateSig;
 
   PluginHostDispatcher get _hostDispatcher =>
-      _dispatcher ??= PluginHostDispatcher(ref, platformName: 'web');
+      _dispatcher ??= PluginHostDispatcher(
+        ref,
+        platformName: 'web',
+        openPlayerUi:
+            ({required queue}) => openPluginPlayerUi(
+              context,
+              ref,
+              queue: queue,
+              isActive: () => true,
+              suspendPluginInput: (suspended) {
+                _iframe?.style.pointerEvents = suspended ? 'none' : '';
+              },
+            ),
+      );
 
   /// 在传入的裸 url 上追加 theme + access_token（不带 embed，插件保留自身工具栏）。
   String _buildPluginUrl(String theme) {
@@ -169,6 +184,10 @@ class _PluginWebViewPageState extends ConsumerState<PluginWebViewPage> {
     final dartData = event.data?.dartify();
     if (dartData is! Map) return;
     if (dartData['type'] != 'songloft-host-call') return;
+    if (isPluginPlayerUiCall(dartData) &&
+        event.origin != Uri.base.resolve(iframe.src).origin) {
+      return;
+    }
 
     final req = Map<String, dynamic>.from(dartData);
     final id = req['id'];
@@ -238,7 +257,10 @@ class _PluginWebViewPageState extends ConsumerState<PluginWebViewPage> {
           ),
         ],
       ),
-      body: HtmlElementView(viewType: _viewType),
+      body: PluginPlayerLayout(
+        entryPath: pluginEntryPathFromUrl(widget.pluginUrl),
+        child: HtmlElementView(viewType: _viewType),
+      ),
     );
   }
 }
