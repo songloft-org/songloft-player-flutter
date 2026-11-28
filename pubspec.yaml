@@ -80,7 +80,7 @@ dependencies:
   # HMAC-SHA256 签名（Tracely 监控 SDK）
   crypto: ^3.0.6
   # DLNA 投屏
-  dlna_dart: ^0.1.1
+  dlna_dart: ^0.1.3
   # Android 自托管热更新（冷启动整包替换 libapp.so，仅 Android，其余平台 no-op）
   flutter_patcher: ^0.1.3
   # 桌面小组件（Android App Widget / iOS WidgetKit）

@@ -10,6 +10,12 @@
 
 ## 条目
 
+### DLNA 升级后核对实际 SOAP 请求的转义层级
+
+- Flutter 基线 `281bd60` 的旧依赖快照仍使用 `dlna_dart 0.1.1`，全新解析选中 `0.1.3`。上游从 0.1.2 起编码 DIDL 字符串。客户端继续额外编码，导致已有回归解开 SOAP 后无法解析 `CurrentURIMetaData`。 [上游变更记录](https://pub.dev/packages/dlna_dart/changelog)
+- 提高依赖最低版本，并通过 `device.setUrl` 与 `device.position` 复用上游请求。Linux 上用严格的回环 HTTP 渲染器接收实际 SOAP。外层解析后直接解析 DIDL，逐项核对标题、URL 和 MIME，同时验证 `GetPositionInfo` 只发送 `InstanceID`，客户端能读回进度和播放状态。
+- Seen 1× (2026-11-28)。真机未验收。
+
 ### PLAYER-001 · 播放栏订阅恢复后要继续接收切歌和进度
 
 - 范围为 Flutter 播放栏的 `activePlaybackStateProvider`，客户端基线 `6f0a3a2f2c98827ac6e337499d18db7d8ffd75a6`。Windows 2.13.13 的构建使用 Riverpod 3.1.0。报告截图中队列已切歌，播放栏仍显示旧曲目。 [songloft-org/songloft#594](https://github.com/songloft-org/songloft/issues/594) · [Windows 构建](https://github.com/songloft-org/songloft-player-flutter/actions/runs/44850548368/job/136680677773)

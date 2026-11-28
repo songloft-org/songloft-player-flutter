@@ -96,7 +96,7 @@ class DlnaService {
       await _sendWithRetry(
         'SetAVTransportURI',
         device,
-        () => _setUrl(device, url, title, mime),
+        () => device.setUrl(url, title: title, type: mime),
       );
       if (generation != _generation) return;
       await _sendWithRetry('Play', device, () => device.play());
@@ -105,25 +105,6 @@ class DlnaService {
     }
 
     if (generation == _generation) _startCompletionMonitor();
-  }
-
-  Future<String> _setUrl(
-    DLNADevice device,
-    String url,
-    String title,
-    PlayType mime,
-  ) {
-    // dlna_dart embeds DIDL nodes directly in a string-valued SOAP argument.
-    // Strict TV renderers reject that request with UPnP 716. Escape the complete
-    // DIDL string once at the SOAP boundary, preserving its own XML entities.
-    final xml = XmlText.setPlayURLXml(url, title: title, type: mime);
-    const open = '<CurrentURIMetaData>';
-    const close = '</CurrentURIMetaData>';
-    final start = xml.indexOf(open) + open.length;
-    final end = xml.indexOf(close, start);
-    final metadata = xml.substring(start, end).trim();
-    final body = xml.replaceRange(start, end, htmlEncode(metadata));
-    return device.request('SetAVTransportURI', utf8.encode(body));
   }
 
   /// 设备在切歌/播放结束瞬间会主动关闭连接（HttpException: Connection closed
@@ -159,15 +140,7 @@ class DlnaService {
       final generation = _generation;
       if (device == null || _suppressCompletion) return;
       try {
-        // dlna_dart 0.1.1 sends an extra MediaDuration argument, which strict
-        // renderers reject with 402. GetPositionInfo only accepts InstanceID.
-        final xml = await device.request(
-          'GetPositionInfo',
-          utf8.encode('''
-<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
-<s:Body><u:GetPositionInfo xmlns:u="urn:schemas-upnp-org:service:AVTransport:1">
-<InstanceID>0</InstanceID></u:GetPositionInfo></s:Body></s:Envelope>'''),
-        );
+        final xml = await device.position();
         if (_activeDevice == device &&
             generation == _generation &&
             !_suppressCompletion &&

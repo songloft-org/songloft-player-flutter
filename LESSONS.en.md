@@ -10,6 +10,12 @@ Include rule, scope, full owner/repo#number, failure/fix commit SHAs, actual val
 
 ## Entries
 
+### Verify SOAP escaping on the wire after DLNA dependency upgrades
+
+- The existing dependency snapshot at Flutter baseline `281bd60` used `dlna_dart 0.1.1`. A fresh resolution selected `0.1.3`. Upstream has encoded the DIDL string since 0.1.2. The additional client encoding left the existing regression unable to parse `CurrentURIMetaData` after decoding SOAP. [Upstream changelog](https://pub.dev/packages/dlna_dart/changelog)
+- Raise the minimum dependency version and use the upstream requests through `device.setUrl` and `device.position`. A strict loopback HTTP renderer on Linux received the actual SOAP request. It decoded the envelope, parsed the nested DIDL directly, and checked the title, URL, and MIME type. It also verified that `GetPositionInfo` sends only `InstanceID` and the client reads the returned position and playback state.
+- Seen 1× (2026-11-28). Physical device verification is pending.
+
 ### PLAYER-001 · Verify track and progress updates after resuming the player bar subscription
 
 - Scope is the Flutter player bar's `activePlaybackStateProvider`, client baseline `6f0a3a2f2c98827ac6e337499d18db7d8ffd75a6`. The Windows 2.13.13 build used Riverpod 3.1.0. The reporter's screenshot shows the queue advancing while the bar still displays the previous track. [songloft-org/songloft#594](https://github.com/songloft-org/songloft/issues/594) · [Windows build](https://github.com/songloft-org/songloft-player-flutter/actions/runs/44850548368/job/136680677773)
